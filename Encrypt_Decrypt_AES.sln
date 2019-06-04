@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28803.156
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Encrypt_Decrypt_AES", "Encrypt_Decrypt_AES\Encrypt_Decrypt_AES.csproj", "{8D16DEAA-8859-4560-A0CD-E1949AD5DAD6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8D16DEAA-8859-4560-A0CD-E1949AD5DAD6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8D16DEAA-8859-4560-A0CD-E1949AD5DAD6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8D16DEAA-8859-4560-A0CD-E1949AD5DAD6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8D16DEAA-8859-4560-A0CD-E1949AD5DAD6}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {34B15AAE-2201-4797-97C3-D741A2D01868}
+	EndGlobalSection
+	GlobalSection(TeamFoundationVersionControl) = preSolution
+		SccNumberOfProjects = 1
+		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccTeamFoundationServer = https://swfwmd.visualstudio.com/defaultcollection
+		SccLocalPath0 = .
+	EndGlobalSection
+EndGlobal

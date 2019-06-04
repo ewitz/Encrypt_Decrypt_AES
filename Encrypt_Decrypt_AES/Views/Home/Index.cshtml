@@ -1,0 +1,21 @@
+﻿@model Encrypt_Decrypt_AES.Models.EncryptDecryptModel
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+    <form asp-action="Index">
+        <div class="form-group">
+            <label for="plainText">Plaintext</label>
+            <input type="text" asp-for="plainText" class="form-control watchme" id="plainText" aria-describedby="" placeholder="Enter plaintext (connection string)" value="@Model.plainText">
+        </div>
+        @*<a asp-action="Index" class="btn btn-primary">Convert</a>*@
+        <div class="form-group">
+            <label for="cipherText">Ciphertext</label>
+            <input type="text" asp-for="cipherText" class="form-control watchme" id="cipherText" placeholder="Base64 Encoded Ciphertext" value="@Model.cipherText">
+        </div>
+        <button class="btn btn-primary mt-3" title="Clear out one of the textboxes..." id="convertButton" value="Index" onclick="CheckTextBoxesOnSubmit(this);" type="submit">Convert</button>
+        <button class="btn btn-danger mt-3" id="convertButton" value="Index" onclick="Reset();" type="button">Reset</button>
+        <p></p>
+        <p>Hint: Delete the contents of one of the textboxes to re-enable the "convert" button.</p>
+        <p>Developers: Go to your browser's console to see available routes and expected JSON format (object).</p>
+    </form>
