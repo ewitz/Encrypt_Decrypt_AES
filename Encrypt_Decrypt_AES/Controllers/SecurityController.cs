@@ -13,7 +13,7 @@ namespace Encrypt_Decrypt_AES.Controllers
     {
         //Used for method figuring out which environment this service is in:
         private readonly IConfiguration _configuration;
-        private readonly string _configIV;
+        //private readonly string _configIV;
         private readonly string _configKey;
         // The class constructor.
         public SecurityController(IConfiguration configuration)
@@ -24,7 +24,7 @@ namespace Encrypt_Decrypt_AES.Controllers
             //    _configIV = _configuration["Development:IV"];
             //    _configKey = _configuration["Development:Key"];
             //}
-            _configIV = _configuration["Development:IV"];
+            //_configIV = _configuration["Development:IV"];
             _configKey = _configuration["Development:Key"];
 
         }
@@ -39,17 +39,13 @@ namespace Encrypt_Decrypt_AES.Controllers
                     return NoContent();
                 }
                 string original = model.plainText;
-                using (AesCng myAes = new AesCng())
+                using (AesCryptoServiceProvider myAes = new AesCryptoServiceProvider())
                 {
-                    //myAes.GenerateIV();
-                    //myAes.GenerateKey();
-                    myAes.IV = Convert.FromBase64String(_configIV);
+                    //myAes.GenerateKey();                   
                     myAes.Key = Convert.FromBase64String(_configKey);
-                    // Encrypt the string to an array of bytes.
-                    string cipherText = EncryptStringToBytes_Aes(original, myAes.Key, myAes.IV);
-                    // Decrypt the bytes to a string.
-                    byte[] encrption = Convert.FromBase64String(cipherText);
-                    string decryptedPlaintText = DecryptStringFromBytes_Aes(encrption, myAes.Key, myAes.IV);
+                    // Encrypt the string to an array of bytes.                   
+                    string cipherText = EncryptString(original, myAes.Key);
+                    string decryptedPlaintText = DecryptString(cipherText, myAes.Key);
                     model.cipherText = cipherText;
                 }
                 return Ok(model);
@@ -61,159 +57,90 @@ namespace Encrypt_Decrypt_AES.Controllers
         }
         public string ObtainCipherText(string plainText)
         {
-            using (AesCng myAes = new AesCng())
+            using (AesCryptoServiceProvider myAes = new AesCryptoServiceProvider())
             {
                 //myAes.GenerateKey();
-                //myAes.GenerateIV();
-                myAes.IV = Convert.FromBase64String(_configIV);
                 myAes.Key = Convert.FromBase64String(_configKey);
                 // Encrypt the string to an array of bytes.
-                string cipherText = EncryptStringToBytes_Aes(plainText, myAes.Key, myAes.IV);
+                string cipherText = EncryptString(plainText, myAes.Key);
                 // Decrypt the bytes to a string.
                 byte[] encrption = Convert.FromBase64String(cipherText);
-                string decryptedPlaintText = DecryptStringFromBytes_Aes(encrption, myAes.Key, myAes.IV);
+                string decryptedPlaintText = DecryptString(cipherText, myAes.Key);
+
                 //Display the original data and the decrypted data.
                 return cipherText;
             }
         }
         public string ObtainPlaintText(string cipherText)
         {
-            using (AesCng aesAlg = new AesCng())
+            using (AesCryptoServiceProvider aesAlg = new AesCryptoServiceProvider())
             {
                 string plainText;
-                aesAlg.IV = Convert.FromBase64String(_configIV);
                 aesAlg.Key = Convert.FromBase64String(_configKey);
-                // Declare the string used to hold
-                // the decrypted text.
-                // Create a decryptor to perform the stream transform.
-                ICryptoTransform decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
-                byte[] cipherBytes = Convert.FromBase64String(cipherText);
-                // Create the streams used for decryption.
-                using (MemoryStream msDecrypt = new MemoryStream(cipherBytes))
-                {
-                    using (CryptoStream csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read))
-                    {
-                        using (StreamReader srDecrypt = new StreamReader(csDecrypt))
-                        {
-                            // Read the decrypted bytes from the decrypting stream
-                            // and place them in a string.
-                            plainText = srDecrypt.ReadToEnd();
-                        }
-                    }
-                }
+                plainText = DecryptString(cipherText, aesAlg.Key);
                 return plainText;
             }
         }
-        static string EncryptStringToBytes_Aes(string plainText, byte[] Key, byte[] IV)
-        {
-            // Check arguments.
-            if (plainText == null || plainText.Length <= 0)
-                throw new ArgumentNullException("plainText");
-            if (Key == null || Key.Length <= 0)
-                throw new ArgumentNullException("Key");
-            if (IV == null || IV.Length <= 0)
-                throw new ArgumentNullException("IV");
-            byte[] encrypted;
-            // Create an AesCryptoServiceProvider object
-            // with the specified key and IV.
-            using (AesCng aesAlg = new AesCng())
-            {
-                aesAlg.Key = Key;
-                aesAlg.IV = IV;
-                // Create an encryptor to perform the stream transform.
-                ICryptoTransform encryptor = aesAlg.CreateEncryptor(aesAlg.Key, aesAlg.IV);
 
-                // Create the streams used for encryption.
-                using (MemoryStream msEncrypt = new MemoryStream())
-                {
-                    using (CryptoStream csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write))
-                    {
-                        using (StreamWriter swEncrypt = new StreamWriter(csEncrypt))
-                        {
-                            //Write all data to the stream.
-                            swEncrypt.Write(plainText);
-                        }
-                        encrypted = msEncrypt.ToArray();
-                    }
-                }
-            }
-            // Return string from the encrypted bytes from the memory stream.
-            string cipherText = Convert.ToBase64String(encrypted);
-            return cipherText;
-        }
-        static string DecryptStringFromBytes_Aes(byte[] cipherText, byte[] Key, byte[] IV)
+        public static string EncryptString(string message, byte[] key)
         {
-            // Check arguments.
-            if (cipherText == null || cipherText.Length <= 0)
-                throw new ArgumentNullException("cipherText");
-            if (Key == null || Key.Length <= 0)
-                throw new ArgumentNullException("Key");
-            if (IV == null || IV.Length <= 0)
-                throw new ArgumentNullException("IV");
-            // Declare the string used to hold
-            // the decrypted text.
-            string plaintext = null;
-            // Create an AesCryptoServiceProvider object
-            // with the specified key and IV.
-            using (AesCng aesAlg = new AesCng())
+            var aes = new AesCryptoServiceProvider();
+            var iv = aes.IV;
+            using (var memStream = new System.IO.MemoryStream())
             {
-                aesAlg.Key = Key;
-                aesAlg.IV = IV;
-                // Create a decryptor to perform the stream transform.
-                ICryptoTransform decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
-                // Create the streams used for decryption.
-                using (MemoryStream msDecrypt = new MemoryStream(cipherText))
+                // Add IV to the first 16 bytes of encrypted value, we'll store it there for later decryption
+                memStream.Write(iv, 0, iv.Length);
+                using (var cryptStream = new CryptoStream(memStream, aes.CreateEncryptor(key, aes.IV), CryptoStreamMode.Write))
                 {
-                    using (CryptoStream csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read))
+                    using (var writer = new System.IO.StreamWriter(cryptStream))
                     {
-                        using (StreamReader srDecrypt = new StreamReader(csDecrypt))
-                        {
-                            // Read the decrypted bytes from the decrypting stream
-                            // and place them in a string.
-                            plaintext = srDecrypt.ReadToEnd();
-                        }
+                        writer.Write(message);
+                    }
+                }
+                var buf = memStream.ToArray();
+                return Convert.ToBase64String(buf, 0, buf.Length);
+            }
+        }
+
+        public static string DecryptString(string encryptedValue, byte[] key)
+        {
+            var bytes = Convert.FromBase64String(encryptedValue);
+            var aes = new AesCryptoServiceProvider();
+            using (var memStream = new System.IO.MemoryStream(bytes))
+            {
+                var iv = new byte[16];
+                memStream.Read(iv, 0, 16);  // Pull the IV from the first 16 bytes of the encrypted value
+                using (var cryptStream = new CryptoStream(memStream, aes.CreateDecryptor(key, iv), CryptoStreamMode.Read))
+                {
+                    using (var reader = new System.IO.StreamReader(cryptStream))
+                    {
+                        return reader.ReadToEnd();
                     }
                 }
             }
-            return plaintext;
         }
+
         [HttpPost]
         [Route("decrypt")]
         public ActionResult<EncryptDecryptModel> GetPlaintext(EncryptDecryptModel model)
         {
             try
             {
-                using (AesCng aesAlg = new AesCng())
+                using (AesCryptoServiceProvider aesAlg = new AesCryptoServiceProvider())
                 {
-                    aesAlg.IV = Convert.FromBase64String(_configIV);
                     aesAlg.Key = Convert.FromBase64String(_configKey);
 
-                    // Declare the string used to hold
-                    // the decrypted text.
                     string b64CipherText = model.cipherText;
-                    // Create a decryptor to perform the stream transform.
-                    ICryptoTransform decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
-                    byte[] cipherText = Convert.FromBase64String(b64CipherText);
-                    // Create the streams used for decryption.
-                    using (MemoryStream msDecrypt = new MemoryStream(cipherText))
-                    {
-                        using (CryptoStream csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read))
-                        {
-                            //csDecrypt.Read(cipherText, 0, cipherText.Length);
-                            //plaintext = Convert.ToBase64String(msDecrypt.ToArray());
-                            using (StreamReader srDecrypt = new StreamReader(csDecrypt))
-                            {
-                                // Read the decrypted bytes from the decrypting stream
-                                // and place them in a string.
-                                model.plainText = srDecrypt.ReadToEnd();
-                            }
-                        }
-                    }
+                    string decryptedTxt = DecryptString(b64CipherText, aesAlg.Key);
+
+                    model.plainText = decryptedTxt;
                     return Ok(model);
+
                 }
             }
             catch (Exception ex)
             {
+                //TODO: Write to EventLog, Alert Error 
                 return StatusCode(500, ex);
             }
         }
